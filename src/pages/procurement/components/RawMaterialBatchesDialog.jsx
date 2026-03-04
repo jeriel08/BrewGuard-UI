@@ -1,0 +1,175 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { useQuery } from "@tanstack/react-query";
+import { getBatchesByItemId } from "@/features/inventory/inventoryService";
+import { Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
+const RawMaterialBatchesDialog = ({ open, onOpenChange, material }) => {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const { data, isLoading } = useQuery({
+    queryKey: ["rawMaterialBatches", material?.id],
+    queryFn: () => getBatchesByItemId(material.id),
+    enabled: !!material?.id && open,
+  });
+
+  const batches = Array.isArray(data) ? data : [];
+
+  const formatCurrency = (amount) => {
+    if (amount == null) return "N/A";
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
+  };
+
+  const BatchesContent = () => (
+    <div className="space-y-4">
+      {isLoading ? (
+        <div className="flex justify-center p-4">
+          <Loader2 className="h-6 w-6 animate-spin text-amber-700" />
+        </div>
+      ) : batches.length === 0 ? (
+        <div className="text-center p-4 text-muted-foreground">
+          No batch history found for this raw material.
+        </div>
+      ) : (
+        <ScrollArea className="h-[60vh] md:h-[500px] w-full rounded-md border p-4">
+          <div className="space-y-4">
+            {batches.map((batch, index) => {
+              // Determine trend compared to the NEXT batch in the chronologically ordered list (which is older)
+              let TrendIcon = null;
+              let trendColor = "";
+              if (index < batches.length - 1) {
+                const previousCost = batches[index + 1].actualUnitCost;
+                const currentCost = batch.actualUnitCost;
+                if (currentCost != null && previousCost != null) {
+                  if (currentCost > previousCost) {
+                    TrendIcon = TrendingUp;
+                    trendColor = "text-red-500";
+                  } else if (currentCost < previousCost) {
+                    TrendIcon = TrendingDown;
+                    trendColor = "text-green-500";
+                  } else {
+                    TrendIcon = Minus;
+                    trendColor = "text-gray-400";
+                  }
+                }
+              }
+
+              return (
+                <div key={batch.id}>
+                  <div className="flex items-start justify-between">
+                    <div className="grid gap-1">
+                      <div className="font-semibold text-base">
+                        Batch #{batch.id}: {batch.currentQuantity} /{" "}
+                        {batch.initialQuantity}{" "}
+                        {material?.unitOfMeasurement || "units"}
+                      </div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <span className="font-medium">Unit Cost:</span>
+                        <span>{formatCurrency(batch.actualUnitCost)}</span>
+                        {TrendIcon && (
+                          <TrendIcon className={`h-4 w-4 ${trendColor}`} />
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Received:{" "}
+                        {batch.createdAt
+                          ? format(new Date(batch.createdAt), "PPP")
+                          : "N/A"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Supplier: {batch.supplierName || "Unknown"}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`gap-2 ${
+                        batch.status === "Approved" ||
+                        batch.status === "In Stock"
+                          ? "bg-green-100 text-green-800 border-green-200"
+                          : batch.status === "Depleted"
+                            ? "bg-orange-100 text-orange-800 border-orange-200"
+                            : batch.status === "Rejected" ||
+                                batch.status === "Failed"
+                              ? "bg-red-100 text-red-800 border-red-200"
+                              : "bg-gray-100 text-gray-800 border-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          batch.status === "Approved" ||
+                          batch.status === "In Stock"
+                            ? "bg-green-500"
+                            : batch.status === "Depleted"
+                              ? "bg-orange-500"
+                              : batch.status === "Rejected" ||
+                                  batch.status === "Failed"
+                                ? "bg-red-500"
+                                : "bg-gray-500"
+                        }`}
+                      />
+                      {batch.status}
+                    </Badge>
+                  </div>
+                  {index < batches.length - 1 && <Separator className="my-4" />}
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
+  );
+
+  if (isDesktop) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Batch History - {material?.name}</DialogTitle>
+            <DialogDescription>
+              History of batches and unit costs for this raw material.
+            </DialogDescription>
+          </DialogHeader>
+          <BatchesContent />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="h-[85vh]" showCloseButton={false}>
+        <SheetHeader className="text-left pt-6">
+          <SheetTitle>Batch History - {material?.name}</SheetTitle>
+          <SheetDescription>
+            History of batches and unit costs for this raw material.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="mt-4">
+          <BatchesContent />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+export default RawMaterialBatchesDialog;
