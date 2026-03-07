@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { subDays } from "date-fns";
 import { useProductionReport } from "@/features/reports/api/useReports";
-import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { CapaSummaryCards } from "./CapaSummaryCards";
@@ -10,6 +9,7 @@ import { RootCauseTrendsChart } from "./RootCauseTrendsChart";
 import { MonthlyNcrChart } from "./MonthlyNcrChart";
 import { ActionPlanStatusChart } from "./ActionPlanStatusChart";
 import { TopRecurringDefects } from "./TopRecurringDefects";
+import { ReportSkeleton } from "@/features/reports/components/ReportSkeleton";
 
 const QualityReports = () => {
   const [date, setDate] = useState({
@@ -44,9 +44,7 @@ const QualityReports = () => {
       )}
 
       {isLoading ? (
-        <div className="flex h-40 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <ReportSkeleton chartCount={1} hasSecondRow={true} />
       ) : (
         <>
           {/* Summary Cards */}

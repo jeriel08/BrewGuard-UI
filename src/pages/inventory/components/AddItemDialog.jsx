@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,13 +21,14 @@ import { Plus } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { AddItemForm } from "./AddItemForm";
 
-export function AddItemDialog({ onItemAdded }) {
+export function AddItemDialog() {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const queryClient = useQueryClient();
 
   const handleSuccess = () => {
     setOpen(false);
-    if (onItemAdded) onItemAdded();
+    queryClient.invalidateQueries({ queryKey: ["items"] });
   };
 
   if (isDesktop) {

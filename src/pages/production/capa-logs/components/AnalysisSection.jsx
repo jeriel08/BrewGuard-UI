@@ -156,6 +156,20 @@ export default function AnalysisSection({ capaLog }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Verification Notes — visible to all users when CAPA is closed */}
+      {(capaLog.verificationNotes || capaLog.VerificationNotes) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Verification Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm whitespace-pre-wrap">
+              {capaLog.verificationNotes || capaLog.VerificationNotes}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

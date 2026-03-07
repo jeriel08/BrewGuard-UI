@@ -55,6 +55,7 @@ const CreateInspection = () => {
   const [preview, setPreview] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Define form
   const form = useForm({
@@ -109,6 +110,7 @@ const CreateInspection = () => {
 
   const handleConfirmSubmit = async () => {
     if (!pendingPayload) return;
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       // Use batchId from URL param if available, otherwise form value, to ensure reliability
@@ -175,6 +177,8 @@ const CreateInspection = () => {
             : JSON.stringify(error.response?.data) ||
               "Could not submit inspection.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -268,7 +272,7 @@ const CreateInspection = () => {
         pendingPayload={pendingPayload}
         selectedBatch={selectedBatch}
         onConfirm={handleConfirmSubmit}
-        loading={form.formState.isSubmitting}
+        loading={isSubmitting}
       />
     </div>
   );

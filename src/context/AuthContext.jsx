@@ -38,7 +38,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
-    window.location.href = "/login";
+    // Don't use window.location.href here — it causes a full page reload
+    // (blank page on slow connections). ProtectedRoute will detect user=null
+    // and render <Navigate to="/login" /> for an instant SPA redirect.
   };
 
   return (

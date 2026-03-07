@@ -54,10 +54,12 @@ const ProductBatchesDialog = ({ open, onOpenChange, product }) => {
                       {product?.unitOfMeasurement || "kg"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Received:{" "}
-                      {batch.dateReceived
-                        ? format(new Date(batch.dateReceived), "PPP")
-                        : "N/A"}
+                      Date:{" "}
+                      {(() => {
+                        const d = batch.dateReceived || batch.dateCreated;
+                        if (!d) return "N/A";
+                        return format(new Date(d), "PPP");
+                      })()}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Supplier: {batch.supplierName}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
-import { Loader2, PackageSearch } from "lucide-react";
+import { PackageSearch } from "lucide-react";
 import ProductInventoryTable from "./components/ProductInventoryTable";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProductInventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,8 +28,32 @@ const ProductInventory = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-700" />
+      <div className="flex flex-col space-y-6 p-4 md:px-8 md:pt-4 pt-6 w-full h-full">
+        <div>
+          <Skeleton className="h-9 w-[250px] mb-2" />
+          <Skeleton className="h-5 w-[340px]" />
+        </div>
+        <Skeleton className="h-10 w-full md:max-w-[300px]" />
+        {/* Desktop table skeleton */}
+        <div className="hidden md:block rounded-md border p-4 space-y-3">
+          <Skeleton className="h-8 w-full" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
+        {/* Mobile card skeleton */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-4 border rounded-lg space-y-3">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-[60px]" />
+                <Skeleton className="h-5 w-[70px] rounded-full" />
+              </div>
+              <Skeleton className="h-5 w-[150px]" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

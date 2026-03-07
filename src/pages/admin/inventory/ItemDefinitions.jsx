@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getItems } from "@/features/inventory/inventoryService";
 import { ItemsDataTable } from "@/pages/inventory/components/ItemsDataTable";
 import { createColumns } from "@/pages/inventory/components/columns";
@@ -10,27 +11,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ItemDefinitions = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("raw-material");
 
-  const fetchItems = async () => {
-    setLoading(true);
-    try {
-      const data = await getItems();
-      setItems(data);
-    } catch (err) {
-      console.error("Failed to load inventory items", err);
-      setError("Failed to load inventory items. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  const {
+    data: items = [],
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["items"],
+    queryFn: getItems,
+  });
 
   const rawMaterials = items.filter(
     (item) =>
@@ -53,7 +44,7 @@ const ItemDefinitions = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <AddItemDialog onItemAdded={fetchItems} />
+          <AddItemDialog />
         </div>
       </div>
 
@@ -65,11 +56,14 @@ const ItemDefinitions = () => {
             <Skeleton className="h-10 w-full bg-slate-100" />
             <Skeleton className="h-10 w-full" />
           </div>
-        ) : error ? (
+        ) : isError ? (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              {error?.message ||
+                "Failed to load inventory items. Please try again."}
+            </AlertDescription>
           </Alert>
         ) : (
           <Tabs
@@ -88,14 +82,10 @@ const ItemDefinitions = () => {
                   icon={Package}
                   title="No Raw Materials"
                   description="No raw materials defined. Add a new item with 'Raw Material' category."
-                  action={<AddItemDialog onItemAdded={fetchItems} />}
+                  action={<AddItemDialog />}
                 />
               ) : (
-                <ItemsDataTable
-                  columns={createColumns}
-                  data={rawMaterials}
-                  onItemUpdated={fetchItems}
-                />
+                <ItemsDataTable columns={createColumns} data={rawMaterials} />
               )}
             </TabsContent>
             <TabsContent value="finished-goods" className="space-y-4">
@@ -104,14 +94,10 @@ const ItemDefinitions = () => {
                   icon={Package}
                   title="No Finished Goods"
                   description="No finished goods defined. Add a new item with 'Finished Goods' category."
-                  action={<AddItemDialog onItemAdded={fetchItems} />}
+                  action={<AddItemDialog />}
                 />
               ) : (
-                <ItemsDataTable
-                  columns={createColumns}
-                  data={finishedGoods}
-                  onItemUpdated={fetchItems}
-                />
+                <ItemsDataTable columns={createColumns} data={finishedGoods} />
               )}
             </TabsContent>
           </Tabs>

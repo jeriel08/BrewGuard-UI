@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import { Loader2 } from "lucide-react";
 
 // Layouts
 import AppLayout from "@/layouts/AppLayout";
@@ -99,12 +98,8 @@ const ProductInventory = lazy(
   () => import("@/pages/production/ProductInventory"),
 );
 
-// Loading Spinner for Lazy Routes
-const PageLoader = () => (
-  <div className="flex h-screen w-full items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-amber-700" />
-  </div>
-);
+// Suspense fallback — NavigationProgress in App.jsx handles the visual indicator
+const PageLoader = () => null;
 
 export default function AppRoutes() {
   return (

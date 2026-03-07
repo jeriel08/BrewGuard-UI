@@ -133,7 +133,10 @@ export function PurchaseOrderForm({
         supplierName:
           suppliers.find((s) => s.id === parseInt(data.supplierId))?.name ||
           "Unknown Supplier",
-        expectedDeliveryDate: new Date(data.expectedDeliveryDate).toISOString(),
+        expectedDeliveryDate: (() => {
+          const d = new Date(data.expectedDeliveryDate);
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        })(),
         items: data.items.map((item) => {
           const mapped = {
             itemId: parseInt(item.itemId),

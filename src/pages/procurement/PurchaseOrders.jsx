@@ -18,6 +18,16 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   getShipments,
   getArchivedShipments,
   archiveShipment,
@@ -35,6 +45,10 @@ const PurchaseOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSupplier, setFilterSupplier] = useState("all");
   const [currentTab, setCurrentTab] = useState("active");
+
+  // Archive confirmation state
+  const [orderToArchive, setOrderToArchive] = useState(null);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
 
   const isSuperAdmin = user?.role === "Super Admin";
 
@@ -59,13 +73,22 @@ const PurchaseOrders = () => {
     fetchShipments();
   }, []);
 
-  const handleArchive = async (id) => {
+  const handleArchive = (id) => {
+    setOrderToArchive(id);
+    setIsArchiveModalOpen(true);
+  };
+
+  const confirmArchive = async () => {
+    if (!orderToArchive) return;
     try {
-      await archiveShipment(id);
+      await archiveShipment(orderToArchive);
       toast.success("Order archived successfully");
       fetchShipments();
     } catch (error) {
       toast.error("Failed to archive order");
+    } finally {
+      setIsArchiveModalOpen(false);
+      setOrderToArchive(null);
     }
   };
 
@@ -226,6 +249,33 @@ const PurchaseOrders = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AlertDialog
+        open={isArchiveModalOpen}
+        onOpenChange={setIsArchiveModalOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Purchase Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive this purchase order? It will be
+              moved to the Archived Orders tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!orderToArchive}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmArchive}
+              disabled={!orderToArchive}
+            >
+              Archive Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

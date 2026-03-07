@@ -7,7 +7,6 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-  Loader2,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,7 +25,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,26 +32,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
   const { logout } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Logout failed", error);
-    } finally {
-      logout();
+
+    // Grab token before clearing state
+    const token = localStorage.getItem("token");
+
+    // Clear state immediately — ProtectedRoute renders <Navigate to="/login" /> instantly
+    logout();
+
+    // Fire server-side logout in background (don't block redirect)
+    if (token) {
+      fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }).catch(() => {
+        // Server-side logout is best-effort; token expiry handles cleanup
+      });
     }
   };
 
@@ -139,13 +138,9 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="mr-2 h-4 w-4 hover:text-white" />
-              )}
-              {isLoading ? "Logging out..." : "Log out"}
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4 hover:text-white" />
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

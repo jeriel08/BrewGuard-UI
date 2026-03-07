@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,13 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { EditItemForm } from "./EditItemForm";
 
-export function EditItemDialog({ item, open, onOpenChange, onItemUpdated }) {
+export function EditItemDialog({ item, open, onOpenChange }) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const queryClient = useQueryClient();
 
   const handleSuccess = () => {
     onOpenChange(false);
-    if (onItemUpdated) onItemUpdated();
+    queryClient.invalidateQueries({ queryKey: ["items"] });
   };
 
   if (isDesktop) {

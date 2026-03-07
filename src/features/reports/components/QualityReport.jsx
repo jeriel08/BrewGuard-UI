@@ -7,15 +7,10 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Loader2,
-  ClipboardCheck,
-  Percent,
-  AlertOctagon,
-  Clock,
-} from "lucide-react";
+import { ClipboardCheck, Percent, AlertOctagon, Clock } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import StatCard from "@/components/common/StatCard";
+import { ReportSkeleton } from "./ReportSkeleton";
 import {
   Bar,
   BarChart,
@@ -37,11 +32,7 @@ export const QualityReport = ({ startDate, endDate }) => {
   } = useQualityReport(startDate, endDate);
 
   if (isLoading) {
-    return (
-      <div className="flex h-40 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <ReportSkeleton chartCount={2} />;
   }
 
   if (isError) {

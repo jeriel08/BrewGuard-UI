@@ -11,6 +11,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useUsers } from "@/features/auth/api/useUsers";
 import { useArchivedUsers } from "@/features/auth/api/useArchivedUsers";
 import { useArchiveUser } from "@/features/auth/api/useArchiveUser";
@@ -173,14 +174,15 @@ const ManageUsers = () => {
         cell: ({ row }) => {
           const isActive = row.getValue("isActive");
           return (
-            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold text-foreground">
+            <Badge variant="outline" className="gap-1.5">
               <span
-                className={`h-2.5 w-2.5 rounded-full ${
+                className={`size-1.5 rounded-full ${
                   isActive ? "bg-green-500" : "bg-red-500"
                 }`}
+                aria-hidden="true"
               />
-              <span>{isActive ? "Active" : "Inactive"}</span>
-            </div>
+              {isActive ? "Active" : "Inactive"}
+            </Badge>
           );
         },
       },

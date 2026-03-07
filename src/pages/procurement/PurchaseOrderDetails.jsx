@@ -2,9 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ShipmentInfo from "./components/ShipmentInfo";
 import ShipmentBatches from "./components/ShipmentBatches";
+import PurchaseOrderDetailsSkeleton from "./components/PurchaseOrderDetailsSkeleton";
 
 const PurchaseOrderDetails = () => {
   const { id } = useParams();
@@ -23,11 +24,7 @@ const PurchaseOrderDetails = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-700" />
-      </div>
-    );
+    return <PurchaseOrderDetailsSkeleton />;
   }
 
   if (isError) {

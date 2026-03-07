@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 // Context & API
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +35,7 @@ export default function LoginPage() {
   const { user, login, loading } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // 2. Setup Form
   const form = useForm({
@@ -66,7 +67,6 @@ export default function LoginPage() {
       setErrorMessage(
         error.response?.data?.message || "Invalid email or password.",
       );
-    } finally {
       setIsLoading(false);
     }
   };
@@ -153,7 +153,31 @@ export default function LoginPage() {
                             </Link>
                           </div>
                           <FormControl>
-                            <Input type="password" {...field} />
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                {...field}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                                onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                                <span className="sr-only">
+                                  {showPassword
+                                    ? "Hide password"
+                                    : "Show password"}
+                                </span>
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

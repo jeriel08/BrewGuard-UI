@@ -87,7 +87,7 @@ const CapaLogDetails = () => {
       });
       toast.success("CAPA Log approved and NCR closed successfully.");
       setApproveOpen(false);
-      navigate("/quality-reports");
+      navigate("/ncr");
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||

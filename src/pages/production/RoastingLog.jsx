@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getItems,
   getBatches,
@@ -37,11 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const RoastingLog = () => {
-  const [items, setItems] = useState([]);
-  const [batches, setBatches] = useState([]);
-  const [archivedBatches, setArchivedBatches] = useState([]);
-  const [loadingBatches, setLoadingBatches] = useState(true);
-  const [errorBatches, setErrorBatches] = useState(null);
+  const queryClient = useQueryClient();
   const [editingBatch, setEditingBatch] = useState(null);
   const [currentBatchTab, setCurrentBatchTab] = useState("active");
 
@@ -49,37 +46,24 @@ const RoastingLog = () => {
   const [batchToArchive, setBatchToArchive] = useState(null);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
 
-  // Fetch items to filter for "Finished Product"
-  const fetchItems = async () => {
-    try {
-      const data = await getItems();
-      setItems(data);
-    } catch (err) {
-      console.error("Failed to load inventory items", err);
-    }
-  };
+  const { data: items = [] } = useQuery({
+    queryKey: ["inventoryItems"],
+    queryFn: getItems,
+  });
 
-  const fetchBatches = async () => {
-    setLoadingBatches(true);
-    try {
-      const [activeData, archivedData] = await Promise.all([
-        getBatches(),
-        getArchivedBatches(),
-      ]);
-      setBatches(activeData);
-      setArchivedBatches(archivedData);
-    } catch (err) {
-      console.error("Failed to load batches", err);
-      setErrorBatches("Failed to load batches. Please try again.");
-    } finally {
-      setLoadingBatches(false);
-    }
-  };
+  const {
+    data: batches = [],
+    isLoading: loadingBatches,
+    isError: errorBatches,
+  } = useQuery({
+    queryKey: ["batches"],
+    queryFn: getBatches,
+  });
 
-  useEffect(() => {
-    fetchItems();
-    fetchBatches();
-  }, []);
+  const { data: archivedBatches = [] } = useQuery({
+    queryKey: ["archivedBatches"],
+    queryFn: getArchivedBatches,
+  });
 
   // Filter items for Finished Products only
   const finishedProductItems = useMemo(() => {
@@ -135,7 +119,8 @@ const RoastingLog = () => {
         description: `Produced ${data.producedQuantity} units.`,
       });
       // Refresh data
-      fetchBatches();
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["archivedBatches"] });
     } catch (error) {
       console.error("Failed to roast coffee", error);
       toast.error("Error", {
@@ -156,7 +141,8 @@ const RoastingLog = () => {
         description: `Successfully updated the production batch.`,
       });
       setEditingBatch(null);
-      fetchBatches();
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["archivedBatches"] });
     } catch (error) {
       console.error("Failed to update roasting log", error);
       toast.error("Error", {
@@ -176,7 +162,8 @@ const RoastingLog = () => {
     try {
       await archiveBatch(batchToArchive);
       toast.success("Roasting log archived successfully");
-      fetchBatches();
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["archivedBatches"] });
     } catch (error) {
       toast.error("Failed to archive roasting log");
       console.error(error);
@@ -190,7 +177,8 @@ const RoastingLog = () => {
     try {
       await unarchiveBatch(id);
       toast.success("Roasting log restored successfully");
-      fetchBatches();
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["archivedBatches"] });
     } catch (error) {
       toast.error("Failed to restore roasting log");
       console.error(error);
@@ -198,6 +186,16 @@ const RoastingLog = () => {
   };
 
   const extendedColumns = useMemo(() => {
+    const totalCostColumn = {
+      accessorKey: "actualUnitCost",
+      header: "Total Cost",
+      cell: ({ row }) => {
+        const unitCost = row.getValue("actualUnitCost") || 0;
+        const quantity = row.original.currentQuantity || 0;
+        return `₱${(unitCost * quantity).toFixed(2)}`;
+      },
+    };
+
     const actionColumn = {
       id: "actions",
       cell: ({ row }) => {
@@ -272,13 +270,14 @@ const RoastingLog = () => {
       },
     };
 
-    return [
-      ...batchColumns.filter(
-        (c) =>
-          c.accessorKey !== "dateReceived" && c.accessorKey !== "supplierName",
-      ),
-      actionColumn,
-    ];
+    const baseColumns = batchColumns.filter(
+      (c) =>
+        c.accessorKey !== "dateReceived" &&
+        c.accessorKey !== "supplierName" &&
+        c.accessorKey !== "actualUnitCost",
+    );
+
+    return [...baseColumns, totalCostColumn, actionColumn];
   }, [currentBatchTab]);
 
   return (

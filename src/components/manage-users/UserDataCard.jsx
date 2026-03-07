@@ -26,18 +26,14 @@ export const UserDataCard = ({ user, onArchive }) => {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">Status:</span>
-          <Badge
-            variant="outline"
-            className="flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-semibold"
-          >
+          <Badge variant="outline" className="gap-1.5">
             <span
-              className={`h-2.5 w-2.5 rounded-full ${
+              className={`size-1.5 rounded-full ${
                 user.isActive ? "bg-green-500" : "bg-red-500"
               }`}
+              aria-hidden="true"
             />
-            <span className="font-medium text-sm">
-              {user.isActive ? "Active" : "Inactive"}
-            </span>
+            {user.isActive ? "Active" : "Inactive"}
           </Badge>
         </div>
       </CardContent>

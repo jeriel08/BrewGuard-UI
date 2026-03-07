@@ -145,7 +145,7 @@ export const getColumns = (user) => [
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" asChild>
                 <Link to={`/capa-logs/new?ncrId=${id}`}>
-                  <PenLine className="h-4 w-4 text-emerald-600 hover:text-emerald-700" />
+                  <PenLine className="h-4 w-4 hover:text-white" />
                   <span className="sr-only">Write CAPA Log</span>
                 </Link>
               </Button>

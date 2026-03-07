@@ -39,20 +39,22 @@ const RawMaterialsInventoryCard = ({ material, onClick }) => {
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          <div className="text-2xl font-bold">{material.name}</div>
-          <div className="flex justify-between items-end">
-            <p className="text-sm text-muted-foreground">
-              Total Quantity:{" "}
-              <span className="font-medium text-foreground">
-                {material.totalQuantity}
-              </span>
-            </p>
-            <div className="text-sm text-muted-foreground text-right">
-              Latest Cost:{" "}
-              <div className="flex items-center justify-end gap-1 font-medium text-foreground">
-                {formatCurrency(cost)}
-                {TrendIcon && <TrendIcon className={`h-4 w-4 ${trendColor}`} />}
-              </div>
+          <div className="text-base font-semibold truncate">
+            {material.name}
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Total Quantity:
+            </span>
+            <span className="font-medium text-sm">
+              {material.totalQuantity}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Latest Cost:</span>
+            <div className="flex items-center gap-1 font-medium text-sm">
+              {formatCurrency(cost)}
+              {TrendIcon && <TrendIcon className={`h-4 w-4 ${trendColor}`} />}
             </div>
           </div>
         </div>
